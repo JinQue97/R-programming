@@ -1,0 +1,148 @@
+---
+title: "Homework 1"
+author: "Jin Gyu Kim"
+output:
+  prettydoc::html_pretty:
+    theme: architect
+    highlight: github
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Exercises
+
+## R4DS 27.2.1
+
+### Exercise 1
+I created a new notebook using File > New File > R Notebook. 
+I read the instructions, practiced running the chunks by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+I modified the code to *summary(cars)* and re-run it, and see modified output.
+
+### Exercise 2
+I created a new R Markdown document using File > New File > R Markdown. I knitted it by clicking the appropriate button, and using keyboard short cut pressing *Cmd+Shift+K*.
+I modified the input and saw the output update.
+
+### Exercise 3
+When running the plot(), R markdown and R notebook both shows their output inside the editor. When running summary(), R markdown and R notebook both shows their output inside the editor and inside the console. There were no difference between R markdown and R notebook in the output. 
+
+Both R markdown and R notebook can be knit to produce HTML, PDF, and docx extension, only R notebook has preview with the extension .nb.html. Both requires to save before knitting, while R notebook doesn't.
+
+R markdown initially has *title, author, date,* and *output - html_document*, but R notebook has only *title,* and *output - html_notebook*. Copying YAML from one to another is interchangeable, however, it changes a file by the *output* in the header. 
+
+### Exercise 4
+
+When knitting to PDF or docx, the *pdf_document: default, word_document: default* has been added below *html_document: default* input in YAML. 
+
+YAML header in PDF and docx were in the middle line and split to two pages, while html YAML header stayed in the left side with a single plage. The color of header changed to blue when knitted to only docx output. 
+
+## R4DS 27.3.1
+
+### Exercise 1
+
+## Jin Gyu Kim
+
+***
+### Employment
+***
+* Classroom Technology Student Assistant (OSU College of Pharmacy) **Aug 2021 - Present**
+
+
+* Online Private Tutor (Glorang) **May 2021 - Present**
+
+
+* Medic/Squad Leader (Republic of Korea Army) **Aug 2019 - Mar 2021**
+
+* Pharmacy Technician (Medication Management Program) **Oct 2017 - Nov 2018**
+
+
+### Education
+***
+* The Ohio State University (PharmD) **Aug 2021 - Present**
+
+
+* Armed Force Military Medical School (Student President) **Sep 2019 - Oct 2019**
+
+
+* The Ohio State University (BA Chemistry) **Aug 2015 - May 2019**
+
+### Exercise 2
+
+1. Add a footnote.
+
+This is a sentence that has a footnote^[This is a footnote] 
+
+2. Add a horizontal rule.
+
+This is a horizontal rule below.
+
+*** 
+
+3. Add a block quote.
+
+> This is a block quote
+
+
+### Exercise 3
+
+```{r setup1, include = FALSE}
+library(ggplot2)
+library(dplyr)
+smaller <- diamonds %>% 
+  filter(carat <= 2.5)
+```
+
+We have data about `r nrow(diamonds)` diamonds. Only 
+`r nrow(diamonds) - nrow(smaller)` are larger than
+2.5 carats. The distribution of the remainder is shown
+below:
+
+```{r, echo = FALSE}
+smaller %>% 
+  ggplot(aes(carat)) + 
+  geom_freqpoly(binwidth = 0.01)
+```
+
+The most striking feature is, the most diamonds are placed between 0.25 - 0.5 carats
+
+# Practices 
+
+## R4DS 4.4
+
+### Practice 1 
+
+It didn't work because of the letter 'ı' below is not the same letter 'i' above.
+
+### Practice 2
+
+This is the fixed version from the question
+
+```{r}
+
+library(tidyverse)
+
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy))
+
+filter(mpg, cyl == 8)
+filter(diamonds, carat > 3)
+
+```
+
+### Practice 3
+
+When I pressed *Alt + Shift + K*, it showed me a keyboard shortcuts. You can find the same thing by clicking the menu *tools* -> *Keyboard Shortcuts Help*
+
+# Additional exercises
+
+Here are the rows of the mtcars dataset corresponding to Honda and Toyota cars.
+
+```{r additional exercise, echo = TRUE}
+
+knitr::kable(
+  mtcars[19:21, ],
+  caption = "A knitr kable.",
+  )
+
+```
