@@ -1,0 +1,227 @@
+---
+title: "homework-03"
+author: "Jin Gyu Kim"
+date: "2/4/2022"
+output: 
+  prettydoc::html_pretty:
+    theme: architect
+    highlight: github
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#HoPR Exercises
+
+## HoPR 5.1 
+```{r}
+character <- c("1", "one")
+typeof(character)
+
+number <- c(1)
+typeof(number)
+```
+
+# HoPR 5.2
+```{r}
+hand <- c("ace", "king", "queen", "jack", "ten")
+
+typeof(hand)
+
+names(hand) <- c("spade", "spade", "spade",
+"spade", "spade")
+
+hand
+```
+
+# HoPR 5.3
+```{r}
+royal_flush <- c("ace", "king", "queen", "jack", "ten", "spades", "spades", "spades", "spades", "spades")
+r <- matrix(royal_flush, nrow = 5)
+r
+```
+
+# HoPR 5.4
+The vector results of assigning everything as a character. Since atomic vector can only save as one type of data
+```{r}
+card <- c("ace", "hearts", 1)
+card
+
+typeof(card)
+```
+
+# HoPR 5.5
+```{r}
+card1 <- list("king", "clover", 10)
+card1
+typeof(card1)
+```
+
+# Additional exercises
+
+## Exercise 1
+```{r}
+TRUE == T
+T <- 55
+TRUE == T
+```
+
+The first line is set as Boolean value so it comes out as true, but the second line sets "T" as a double. So the third line comes out as FALSE. To avoid problems, do not set confusing words as variables. Use "card" as a variable instead of "TRUE"
+
+## Exercise 2
+```{r}
+library(ggplot2)
+p <- ggplot(data = mpg) + 
+    geom_point(mapping = aes(x = displ, y = hwy))
+typeof(p)
+length(p)
+names(p)
+attributes(p)
+```
+1. p is a list. The length is 9
+2. "data", "layers", "scales", "mapping", "theme", "coordinates", "facet", "plot_env", "labels" 
+3. $names "data", "layers", "scales", "mapping", "theme", "coordinates", "facet", "plot_env", "labels" 
+$class "gg", "ggplot"
+
+## Exercise 3
+log(x = 10) and log(x <- 10) both are assigning an object and both values comes out the same. But = is only allowed to assign arguments but not functions
+```{r}
+value <- (x <- 10)
+value
+typeof(value[1])
+log(x = 10)
+log(x <- 10)
+```
+
+## Exercise 4 
+the function ls() returns the list the names of all the objects that are present in the working directory. rm() function removes from the list of the global environment
+```{r}
+height <- 66
+feet <- height %% 12 #integer division 
+ls()
+
+rm(height)
+```
+
+## Exercise 5
+Doubles are subject to rounding error. The computer does not interpret value left and right the same.
+```{r}
+(0.18 - 0.08) == 0.1
+
+all.equal(0.18 - 0.08, 0.1) 
+```
+
+## Exercise 6
+```{r}
+my_list <-list(mean = 0, sd = 1, distribution = 'normal')
+my_list$sample <- rnorm(10)
+# my_list[['sample']] <- rnorm(10)
+sample(my_list)
+```
+
+## Exercise 7
+carat = 2.29, price = 18823
+```{r}
+library(ggplot2)
+
+max.id <- diamonds$price == max(diamonds$price)
+
+max(diamonds$price)
+
+diamonds$carat[max.id]
+```
+
+## Exercise 8
+5222 of diamonds has greater price than 10000
+```{r}
+sum_diamond <- diamonds$price > 10000
+sum(sum_diamond)
+```
+
+## Exercise 9
+If pasting a character and numeric vector together, the computer will automatically assign all the elements as characters. 
+```{r}
+exercise9 <- c(1, "one")
+typeof(exercise9)
+```
+
+## Exercise 10
+1.
+```{r}
+caratz <- ((diamonds$carat - mean(diamonds$carat)))/sd(diamonds$carat)
+
+scale(diamonds$carat)
+
+ggplot(data = diamonds, mapping = aes(x = scale(diamonds$carat), y = caratz)) +
+  geom_point()
+```
+2. arguments of scale():
+x - a numeric matrix
+center - either a logical value or numeric-alike vector of length equal to the number of columns of x
+scale - either a logical value or a numeric-alike vector of length equal to the number of columns of x.
+
+```{r}
+#center a vector by subtracting its mean only
+scale(diamonds$carat, scale = FALSE)
+  
+#center a vector by subtracting its mean only
+scale(diamonds$carat, center = FALSE)
+```
+
+## Exercise 11
+```{r}
+# Use indexing by a character to extract the columns of mpg named hwy and cty. 
+mpg[, c('cty', 'hwy')]
+class(mpg[, c('cty', 'hwy')])
+```
+
+## Exercise 12
+```{r}
+# Copy mpg to another variable named mpg_copy
+mpg_copy <- mpg
+
+# Use names() to rename the columns cty and hwy of mpg_copy to city and highway, respectively.
+names(mpg_copy)[names(mpg_copy) == 'cty'] <- 'city'
+names(mpg_copy)[names(mpg_copy) == 'hwy'] <- 'highway'
+
+mpg_copy[, c('city', 'highway')]
+```
+
+## Exercise 13
+x is a matrix which means the elements are arranged in a two-dimensional rectangular layout. They contain elements of the same atomic types. x[,1] is not a matrix because it is not a two-dimensional rectangular layout, but only giving numeric values.
+```{r}
+# What is the following object?
+x <- matrix(rnorm(200), nrow = 20, ncol = 10)
+class(x)
+
+# Verify that the following object is not a matrix.
+x[,1]
+class(x[,1])
+```
+
+## Exercise 14
+2. The previous plot is incorrect because the rain amount shows in negative value
+4. The pattern shows sudden increase after 2000 days, and gradual decrease after then
+```{r}
+# Make a scatterplot of rain against day.
+library(ggplot2)
+require(readr)
+rainfall <- read_csv(file = "http://www.stat.osu.edu/~vqv/4194/data/rainfall.csv")
+
+ggplot(data = rainfall, mapping = aes(x = day, y = rain)) +
+  geom_point()
+
+# Fix the data with NA and create a new plot of rain against day.
+rainfall$rain[rainfall$rain < 0] <- NA
+
+ggplot(data = rainfall, mapping = aes(x = day, y = rain)) +
+  geom_point()
+
+#Make a plot showing days for where the rain measurement is missing. Does there appear to be a pattern to the missingness? Explain using your plot.
+ggplot(data = rainfall[is.na(rainfall$rain), ], mapping = aes(x = day, y = is.na(rain))) +
+  geom_point() +
+  geom_violin()
+
+```
+
