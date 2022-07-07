@@ -1,0 +1,293 @@
+---
+title: "homework-05"
+author: "Jin Gyu Kim"
+date: "2/18/2022"
+output:
+  prettydoc::html_pretty:
+    theme: architect
+    highlight: github
+---
+
+```{r}
+library(dplyr)
+library(nycflights13)
+library(ggplot2)
+```
+
+# R4DS Exercises
+
+## R4DS 5.6.7
+
+### Exericise 1
+
+I believe arrival delay is more important because people will try to set the schedule to arrive at the airport. But the schedule at the destination is dependent on the arrival time. If there is a delay at the arrival time, people's schedule will be disrupted. 
+
+5 different way to assess the typical delay characteristics is: large or small delays, consistent, various delay, and the arrival or departure delays.  
+
+### Exericise 2
+
+```{r}
+not_cancelled <- flights %>%
+  filter(!is.na(dep_delay), !is.na(arr_delay))
+
+# Giving same output as not_cancelled %>% count(dest)
+
+not_cancelled %>%
+  group_by(dest) %>% 
+  summarise(n = n())
+
+# Giving same output as not_cancelled %>% count(tailnum, wt = distance)
+not_cancelled %>%
+  group_by(tailnum) %>% 
+  summarise(n = sum(distance))
+```
+
+### Exericise 3
+
+Since the statement is only showing the departing time and the arrival time is missing. There could be a cancelled flight, changed destination during the flight or so. I would make the table optimal by taking of the NA from the data set. 
+
+```{r}
+flights %>% 
+  filter(is.na(arr_delay))
+```
+
+
+### Exericise 4
+
+```{r}
+# Look at the number of cancelled flights per day. Is there a pattern?
+cancelled_per_day <- 
+  flights %>%
+  mutate(cancelled = (is.na(arr_delay) | is.na(dep_delay))) %>%
+  group_by(year, month, day) %>%
+  summarise(
+    cancelled_num = sum(cancelled),
+    flights_num = n(),
+  )
+
+# The highest cancelled flight was on February, and the most of the cancelled flight were grouped on during the winter time 
+
+ggplot(cancelled_per_day) +
+  geom_col(aes(x = day, y = cancelled_num)) +
+  facet_wrap(~ month, nrow = 3)
+
+# Is the proportion of cancelled flights related to the average delay?
+
+cancelled_and_delays <- 
+  flights %>%
+  mutate(cancelled = (is.na(arr_delay) | is.na(dep_delay))) %>%
+  group_by(year, month, day) %>%
+  summarise(
+    cancelled_prop = mean(cancelled),
+    avg_dep_delay = mean(dep_delay, na.rm = TRUE),
+    avg_arr_delay = mean(arr_delay, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# There is a strong increasing relationship between the proportion of cancelled flights and the average departure/arrival delay
+ggplot(cancelled_and_delays) +
+  geom_point(aes(x = avg_dep_delay, y = cancelled_prop)) +
+  scale_y_log10()
+
+ggplot(cancelled_and_delays) +
+  geom_point(aes(x = avg_arr_delay, y = cancelled_prop)) +
+  scale_y_log10()
+```
+
+### Exericise 5
+
+```{r}
+#F9 has the worst delays
+
+flights %>%
+  group_by(carrier) %>%
+  summarise(arr_delay = mean(arr_delay, na.rm = TRUE)) %>%
+  arrange(desc(arr_delay))
+```
+
+### Exericise 6
+
+Sort argument to count(): sorts the results in order. it can be used by this example below
+```{r} 
+# Not using sort
+flights %>% count(dest)
+
+# Using sort
+flights %>% count(dest, sort = TRUE)
+```
+
+## R4DS 5.7.71
+
+
+### Exericise 1
+
+List of useful mutate and filtering functions:
+
+Arithmetic operators: +, -, *, /, ^. 
+
+Modular arithmetic: %/% (integer division) and %% (remainder), where x == y * (x %/% y) + (x %% y). 
+
+Logs: log(), log2(), log10()
+
+Offsets: lead() and lag()
+
+Cumulative and rolling aggregates: R provides functions for running sums, products, mins and maxes: cumsum(), cumprod(), cummin(), cummax(); and dplyr provides cummean()
+
+Logical comparisons, <, <=, >, >=, !=, and ==
+
+Ranking: there are a number of ranking functions, but you should start with min_rank()
+
+### Exericise 2
+
+```{r}
+not_cancelled %>%
+  group_by(tailnum) %>%
+  summarise(arr_delay = mean(arr_delay, na.rm = TRUE)) %>%
+  ungroup() %>%
+  filter(rank(desc(arr_delay)) <= 1)
+```
+
+### Exericise 3
+
+```{r}
+flights %>%
+  group_by(hour) %>%
+  summarise(arr_delay = mean(arr_delay, na.rm = TRUE)) %>%
+  arrange(arr_delay)
+```
+
+### Exericise 4
+
+```{r}
+not_cancelled %>%  
+  group_by(dest) %>%
+  summarise(sum_arr_delay = sum(arr_delay) )
+
+not_cancelled %>% 
+  group_by(flight) %>%
+  transmute(prop_arr_delay = arr_delay / sum(arr_delay))
+```
+
+### Exericise 5
+
+```{r}
+lagged_delays <- flights %>%
+  arrange(origin, year, month, dep_time) %>%
+  group_by(origin) %>% 
+  mutate(dep_delay_lag = lag(dep_delay)) %>%
+  filter(!is.na(dep_delay), !is.na(dep_delay_lag))
+  
+lagged_delays %>% 
+  group_by(dep_delay_lag) %>% 
+  summarise(dep_delay_mean = mean(dep_delay)) %>% 
+  ggplot(aes(x = dep_delay_mean, y = dep_delay_lag)) +
+  geom_point() +
+  labs(x = "previous departure delay", y = "departure delay")
+```
+### Exericise 6
+
+```{r}
+# compare a flight's air_time to what is typical
+# for that route
+not_cancelled %>%
+  group_by(origin, dest) %>% 
+  mutate(air_time_z = scale(air_time, 
+                            center = median(air_time), 
+                            scale = IQR(air_time))) %>% 
+  select(origin, dest, air_time, air_time_z) %>% 
+  filter(air_time_z < -3) %>% 
+  select(origin, dest, air_time, air_time_z)
+
+# Compute summary of air_time for flights between LGA and PBI
+not_cancelled %>% 
+  filter(origin == "LGA", dest == "PBI") %>% 
+  summarize(mean = mean(air_time), sd = sd(air_time))
+  
+# Compute summary of air_time for flights between LGA and BOS
+not_cancelled %>% 
+  filter(origin == "LGA", dest == "BOS") %>% 
+  summarize(mean = mean(air_time), sd = sd(air_time))
+```
+
+### Exericise 7
+
+```{r}
+# Carrier "EV" flies to the most destinations
+not_cancelled %>% 
+  group_by(dest, carrier) %>%
+  count(carrier) %>%
+  filter(n >= 2) %>%
+  group_by(carrier) %>%
+  count(sort = TRUE)
+```
+
+
+### Exericise 8
+
+```{r}
+not_cancelled %>%
+  group_by(tailnum) %>%
+  mutate(delay_gt1hr = dep_delay > 60) %>%
+  mutate(before_delay = cumsum(delay_gt1hr)) %>%
+  filter(before_delay < 1) %>%
+  count(sort = TRUE)
+```
+
+## Additional Exercises 
+
+### Exercise 1
+
+```{r}
+not_canceled <- filter(flights, !is.na(dep_delay))
+by_month <- group_by(not_canceled, month)
+monthly_delay <- summarize(by_month,
+  dep_delay_lq = quantile(dep_delay, 0.25),
+  dep_delay_median = median(dep_delay),
+  dep_delay_uq = quantile(dep_delay, 0.75)
+)
+                  
+ggplot(data = monthly_delay, aes(month)) +
+  geom_ribbon(aes(ymin = dep_delay_lq, ymax = dep_delay_uq), fill = "gray30") +
+  geom_line(aes(x = month, y = dep_delay_lq, color = "lower quartile")) +
+  geom_line(aes(x = month, y = dep_delay_median, color = "median")) +
+  geom_line(aes(x = month, y = dep_delay_uq, color = "upper quartile")) +
+  labs(y = "departure delay") +
+  scale_x_continuous(breaks = 1:12)
+  
+```
+
+
+### Exercise 2
+
+```{r}
+not_canceled <- filter(flights, !is.na(dep_delay))
+by_hour <- group_by(not_canceled, hour)
+hourly_delay <- summarize(by_hour,
+  dep_delay_lq = quantile(dep_delay, 0.25),
+  dep_delay_median = median(dep_delay),
+  dep_delay_uq = quantile(dep_delay, 0.75)
+)
+                  
+ggplot(data = hourly_delay, aes(hour)) +
+  geom_ribbon(aes(ymin = dep_delay_lq, ymax = dep_delay_uq), fill = "gray30") +
+  geom_line(aes(x = hour, y = dep_delay_lq, color = "lower quartile")) +
+  geom_line(aes(x = hour, y = dep_delay_median, color = "median")) +
+  geom_line(aes(x = hour, y = dep_delay_uq, color = "upper quartile")) +
+  labs(y = "departure delay") +
+  scale_x_continuous(breaks = 0:2400)
+```
+
+### Exercise 3
+
+```{r}
+top5_by_month <- not_cancelled %>%
+  group_by(month) %>% 
+  count(dest) %>% 
+  filter(min_rank(desc(n)) <= 5)
+
+ggplot(top5_by_month, aes(month, n, color = dest)) +
+  geom_line() +
+  scale_x_continuous(breaks = 1:12) +
+  labs(y = "Number of scheduled flights")
+```
+
