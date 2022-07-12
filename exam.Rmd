@@ -1,0 +1,394 @@
+---
+title: 'STAT 5730: Exam'
+author: Jin Gyu Kim
+output: prettydoc::html_pretty
+---
+
+```{r setup, include=FALSE}
+# Keep this chunk at the top of the exam. 
+# DO NOT MODIFY
+
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+library(tidyverse)
+library(nycflights13)
+
+# This code seeds the randomization for your personalized exam using your 
+# OSU `name.n`. Replace `vu.104` below with your OSU `name.n`. Do not modify 
+# anything else.
+
+my_name_dot_n <- "kim.6182" # REPLACE WITH YOUR NAME.N
+
+set.seed(prod(strtoi(charToRaw(my_name_dot_n), 16L)) %% 2e9)
+datasets <- c("airlines", "airports", "flights", "planes", "weather")
+flights <- flights[, sample(ncol(flights))]
+destination <- flights %>% 
+  group_by(dest) %>%
+  summarize(n_origin = n_distinct(origin)) %>%
+  filter(n_origin == 2) %>% 
+  left_join(airports, by = c("dest" = "faa")) %>%
+  sample_n(size = 1)
+```
+
+-------------------------------------------------------------------------------
+
+# Instructions
+
+Read and follow these instructions __carefully__.  Points will be deducted 
+if you do not follow the instructions. Submit (1) `exam.Rmd` file and (2) its 
+knitted HTML output after reading and completing the following.
+
+-   Enter your name in the `author:` field at the top of this file by replacing 
+    `YOUR NAME HERE`.
+-   This exam is __randomized__ and __personalized__. Make sure you follow 
+    these steps exactly:
+    1.  Enter your `name.n` above where it says `# REPLACE WITH YOUR NAME.N`. 
+        I've included my `name.n` as an example.  
+    2.  Knit the exam once to get your personalized exam HTML, make a copy of 
+        that HTML and view it to get your personalized problems.
+    3.  Enter your answers in this `.Rmd` file and submit (1) it and its (2) 
+        knitted HTML output.
+-   Do not modify any other headers or the section headers. Leave everything 
+    alone, except where your answers go, e.g. __Replace__ `# YOUR CODE HERE` and
+    `> YOUR EXPLANATION HERE`.
+-   Complete the 20 problems in the "Problems" section below. 
+    Some of these problems involve the 
+    `nycflights13::flights` data.  The `nycflights13` and `tidyverse` packages 
+    will be loaded for you at the top of the R Markdown file.
+-   All plots must be made using `ggplot2` and displayed in your output HTML. 
+    __Do not load any other libraries__.
+-   For each problem you must provide __both__
+    R code in the empty code chunk (if needed) __and__ 
+    a human-readable explanation in complete English sentences immediately 
+    below the code chunk. __Be sure to explain how you got your answer for 
+    full credit.__
+-   Formatting will be graded. __Be careful about keeping an empty line__ after 
+    the R code chunk whenever you have a plot. Use back ticks to format 
+    inline R code where appropriate.  Two examples are shown immediately below.
+
+-------------------------------------------------------------------------------
+
+## Example 1
+How many rows does `flights` have?
+
+```{r example1}
+nrow(flights)
+```
+
+`flights` has `r nrow(flights)` rows.
+
+## Example 2
+Make a histogram of departure delays.  What do you notice about the plot?
+
+```{r example2}
+ggplot(data = flights, aes(x = dep_delay)) +
+  geom_histogram()
+```
+
+The histogram has a long right tail, because there are some flights with 
+extreme large departure delays.
+
+-------------------------------------------------------------------------------
+
+# Personalized exam for `r my_name_dot_n`
+
+## Problem 1
+How many rows and columns does __`r sample(datasets, size = 1)`__ have?
+
+```{r problem1}
+nrow(weather)
+ncol(weather)
+```
+
+`Weather` has
+rows = 26115
+columns = 15
+
+## Problem 2
+What are the names of the columns of __`r sample(datasets, size = 1)`__? 
+What are the types? How can you tell?
+
+```{r problem2}
+summary(weather)
+typeof(weather)
+```
+
+Columns: `year`, `month`, `day`, `hour`, `temp`, `dewp`, `humid`, `wind_dir`, `wind_speed`, `wind_gust`, `precip`, `pressure`, `visib`, `time_hour`  
+The data structure of `weather` is a list. List is a vector that allows its elements to have different types. it is indexed like vectors.
+
+## Problem 3
+How many flights __`r sample(c("arrived", "departed"), size = 1)`__ 
+on-time or __`r sample(c("earlier", "later"), size = 1)`__?
+
+```{r problem3}
+not_canceled <- filter(flights, !is.na(dep_delay), !is.na(arr_delay))
+summarize(not_canceled, n_really_delayed = sum(dep_delay >= 0))
+```
+
+There are 144211 of flights departed on time or later. 
+
+## Problem 4
+What is the RStudio keyboard shortcut for inserting the pipe operator `%>%`?
+How did you find this out?
+
+```{r problem4}
+# NO CODE NECESSARY 
+```
+
+Shortcut for %>%: __For Mac__ - `control + shift + m`.
+I found out from the lecture.
+
+## Problem 5
+Use `knitr::kable()` to print a table of the last __`r 2 + rpois(1, 10)`__ 
+rows of `flights`.
+
+```{r problem5}
+library(knitr)
+last_13_flights <- tail(flights, 13)
+kable(last_13_flights)
+```
+
+I used tail to extract the last 13 flights, and use `kable` function to show my output of the last 13 data.
+
+## Problem 6
+Uncomment the following code and fix it so it works.
+
+```{r problem6}
+flights %>%
+  select(year:day, ends_with("_delay"), dest) %>%
+  filter(dest == "CMH")
+```
+
+I had to put `dest` variable in select to use the `filter` function. The `filter` function cannot be used when there is no data shown after select.
+
+## Problem 7
+What is the _type_ and _value_ of the expression 
+__`r sample(c("x <- NA", "y <- TRUE", "x <- NA == 0"), size = 1)`__
+
+```{r problem7}
+typeof(x <- NA == 0)
+x
+```
+
+The type of this expression is logical, and the value of the expression is NA since the missing value
+
+## Problem 8
+Fix the following plot so that (1) the smooth line is 
+__`r sample(c("black", "purple", "green", "blue"), size = 1)`__ and (2) the 
+confidence band (shaded ribbon) has a confidence level of 
+__`r sample(seq(80,95, by = 5), size = 1)`%__.
+
+```{r problem8}
+ ggplot(data = mpg, aes(displ, hwy)) +
+   geom_point() +
+   geom_smooth(color = "green", level = 0.90)
+```
+
+I removed `aes()` from geom_smooth because it randomly assigns the color if we put `color = "green"` argument in the aes function. I put an argument `level = 0.90` to make a confidence band has a confidence level of 90% instead of default 95%. 
+
+## Problem 9
+What variables does 
+__`r sample(c("stat_boxplot()", "stat_bin()", "stat_count()"), size = 1)`__ 
+compute?
+
+```{r problem9}
+# NO CODE NECESSARY
+```
+
+`stat_boxplot()` has computed variables `width`, `ymin` or `xmin`, `lower` or `xlower`, `notchlower`, `middle` or `xmiddle`, `notchupper`, `upper` or `xupper`, `ymax` or `xmax`.  
+
+## Problem 10
+Why is it a bad idea to install R packages, e.g. with `install.packages()` 
+in an R Markdown file?
+
+```{r problem10}
+# NO CODE NECESSARY
+```
+
+It is bad a bad idea to install R packages with `install.packages()` because it is not necessary to repeatedly install the package again when using rmd file. Once the installation of the package is done, it should be stayed in the library unless edited. Using install packages through a R markdown will probably compile several timesm, which is a bad idea.
+
+## Problem 11
+Uncomment the following code and explain all that is wrong, explain 
+what needs to be done, and fix it. See also Problem 10.
+
+```{r problem11}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_quantile() +
+  geom_point()
+```
+
+the `+` needs to be moved up, and the `geom_quantile()`, `geom_point()` should be inside of the ggplot function by using `tab`. 
+For Problem 10, it should be altered to 'library()'.
+
+## Problem 12
+Make a sideways parallel box plot so that `manufacturer` is on the 
+vertical axis and __`r sample(c("hwy", "cty"), size = 1)`__ is on the 
+horizontal axis.
+
+```{r problem12}
+ggplot(mpg, aes(x = manufacturer, y = cty)) + 
+  geom_boxplot() +
+  coord_flip()
+```
+
+I used `coord_flip()` for switching x and y axes.
+
+## Problem 13
+Make a parallel box plot of __`r sample(c("departure", "arrival"), size = 1)`__
+delay by hour based on flights 
+that __`r sample(c("arrived", "departed"), size = 1)`__ late. 
+The plot should use a log scale for departure/arrival delay and there should be one 
+box for each value of `hour`.
+
+```{r problem13}
+late_flights <- filter(not_canceled, dep_delay > 0)
+by_hour <- group_by(late_flights, hour) 
+delayed_flights1 <- summarize(by_hour, arr_delay)
+
+ggplot(delayed_flights1, aes(hour, arr_delay, group = hour)) +
+  geom_boxplot() +
+  scale_y_log10() +
+  scale_x_continuous(breaks = 5:24)
+```
+
+I tried to filter flights that departed late than the scheduled departure time. Then I grouped the filtered flights with hour, summarizing arrival delays so I can have two variable. Then I made a ggplot x as a departure hour and y as a minutes of arrival dealy. 19 groups of hour was made and each hour had their own boxplot.
+
+## Problem 14
+Modify the following plot so that the facets are labeled with the 
+corresponding variable names (`drv` and `cyl`).
+
+```{r problem14}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) + 
+  facet_grid(rows = vars(drv), cols = vars(cyl), labeller = label_both)
+```
+
+I added `labeller = label_both` to label the facet_grids at the end of the facet_grid function. 
+
+## Problem 15
+How many flights were scheduled to fly to 
+__`r sample(unique(flights$dest), size = 1)`__ in 
+__`r sample(month.name[1:6], size = 1)`--`r sample(month.name[7:12], size = 1)`__, 
+2013? What proportion of these flights never 
+__`r sample(c("arrived", "departed"), size = 1)`__?
+
+
+```{r problem15}
+to_ANC <- flights %>%
+  filter(dest == "ANC") %>% 
+  filter(month %in% c(4,5,6,7,8))
+
+never_departed <- filter(to_ANC, is.na(air_time))
+
+to_ANC
+
+never_departed
+```
+
+I filtered out the destination to ANC, and months between 4,5,6,7, and 8 and showed 8 data all between July and August. I tried to filter never departed but there was no never departed flights from the filtered value. The proportion is 0 out of 8. -> 0%
+
+## Problem 16
+Which month had the highest __`r sample(c("proportion", "number"), size = 1)`__ 
+of __`r sample(c("on-time", "late"), size = 1)`__ departures? Which month had 
+the lowest?
+
+```{r problem16}
+on_time_departure <- not_canceled %>% 
+  filter(dep_delay == 0) %>% 
+  group_by(month) %>% 
+  summarize(dep_delay = n()) %>% 
+  arrange(desc(dep_delay))
+
+on_time_departure
+```
+
+I defined the on time departure as zero hour departure delay by using filter function. Not early or later. I grouped by group and summarized the number of zero hour departure delay(on time). The most on time flight was on August(1537) and the least on time flight was Feburary(1164)
+
+## Problem 17
+What were the __`r 2 + rpois(1, 3)`__ 
+__`r sample(c("most", "least"), size = 1)`__ frequently flown routes 
+(`origin` and `dest` pairs)?
+
+```{r problem17}
+most_pairs <- flights %>% 
+  group_by(origin, dest) %>% 
+  summarize(n_most_pairs = n()) %>% 
+  arrange(desc(n_most_pairs))
+
+most_pairs
+```
+
+The 3 most frequent flown routes are:
+JFK -> LAX 11262
+LGA -> ATL 10263
+LGA -> ORD 8857
+
+## Problem 18
+Make a bar chart showing the average departure delay (based on `not_cancelled` 
+flights) by __`r sample(c("month", "hour"), size = 1)`__.
+
+```{r problem18}
+not_cancelled <- filter(flights, !is.na(dep_delay))
+
+monthly_delay <- group_by(not_cancelled, month) %>% 
+  summarize(avg_dep_delay = mean(dep_delay)) 
+
+ggplot(monthly_delay) +
+  geom_bar(aes(month, avg_dep_delay), stat='identity') +
+  scale_x_continuous(breaks = 1:12)
+```
+
+I grouped month from `not_cancelled` and summarized the `dep_delay` as the average. Then created a geom_bar to show the average departure delay by month
+
+## Problem 19
+The New York City area has two airports that operate flights to 
+__`r destination$dest` (`r destination$name`)__. 
+Make a plot comparing the distributions of travel times (define this) to 
+`r destination$dest`. The plot should show histograms (with appropriate choice of 
+binwidth) and display summaries such as the median or mean as additional 
+layers on the plot.  The rest of the design of the plot is up to you, but 
+you should make reasonable choices and provide a justification for your 
+choices.
+
+```{r problem19}
+dsm_flights <- filter(not_canceled, dest == 'DSM') %>% 
+  group_by(origin, air_time) %>% 
+  summarize(n_flights = n())
+
+mean_flights <- filter(not_canceled, dest == 'DSM') %>% 
+  group_by(origin) %>%
+  summarize(mean_value = mean(air_time))
+
+mean_flights
+
+ggplot(dsm_flights, aes(air_time, n_flights, fill = origin)) +
+  geom_histogram(color = 'black', binwidth = 10, position = 'stack', stat = 'identity') +
+  geom_vline(data = mean_flights, aes(xintercept = mean_value, color = origin), linetype = 5)
+```
+
+I made a histogram counting number of flights distributed of `air_time` with a bandwidth of 10 displaying the mean of `air_time` origin of EWR, and LGA. The average flight time for EWR is 149.5410, and LGA 146.1504, which concludes a trip from LGA can same 3 minutes in average. However, the number of samples from LGA is much less than EWR.
+
+## Problem 20
+How does the number of cancelled flights vary by origin and month? Are there 
+more cancelled flights during certain months than others? Does that vary 
+across origins? Does it matter if you look at the proportion (number cancelled 
+divided by total number of flights for that origin) instead of number? Make a 
+plot (or two if you wish) to answer these questions, and comment on how your 
+plot answers these questions.
+
+```{r problem20}
+# By total stack
+by_month <- filter(flights, is.na(air_time)) %>% 
+  group_by(month, origin) %>% 
+  summarize(n_no_flights = n()) 
+
+ggplot(by_month, aes(month, n_no_flights, fill = origin)) +
+  geom_bar(position = 'dodge', stat = 'identity') +
+  scale_x_continuous(breaks = 1:12)
+
+# By fill
+ggplot(by_month, aes(x = month, y = n_no_flights, fill = origin)) +
+  geom_bar(position = "fill", stat = 'identity') +
+  scale_x_continuous(breaks = 1:12)
+```
+
+EWR had more cancelled flights significantly during winter(Dec, Jan, Feb). LGA had more cancelled flights significantly during autumn(July, Aug, Sept). It matters if I look at the proportion instaed of number because it is easy to find how much the origin takes place in one month. 
